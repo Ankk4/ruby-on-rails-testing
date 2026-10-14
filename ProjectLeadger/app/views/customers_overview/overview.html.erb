@@ -1,0 +1,16 @@
+<div class="w-full space-y-4">
+  <h1 class="text-4xl font-bold"><%= @overview.customer.name %></h1>
+
+  <p>Welcome! You can manage your projects here.</p>
+
+  <% if @overview.customer.projects.empty? %>
+    <p>No projects yet. Start creating your first project!</p>
+  <% else %>
+    <h2 class="text-3xl font-bold">Your Projects</h2>
+    <ul class="list-disc list-inside">
+      <% @overview.projects.each do |project| %>
+        <li><%= project.name %></li>
+      <% end %>
+    </ul>
+  <% end %>
+</div>
