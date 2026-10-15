@@ -1,16 +1,98 @@
-<div class="w-full space-y-4">
-  <h1 class="text-4xl font-bold"><%= @overview.customer.name %></h1>
+<% content_for :title, "#{@overview.customer.name} · Overview" %>
 
-  <p>Welcome! You can manage your projects here.</p>
+<div class="mx-auto w-full max-w-6xl space-y-8 pb-16 text-gray-900">
+  <header class="flex flex-col gap-6 border-b border-gray-200 pb-8 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-widest text-blue-600">Project Ledger / Customer overview</p>
+      <h1 class="mt-3 text-4xl font-bold tracking-tight"><%= @overview.customer.name %></h1>
+      <p class="mt-3 text-sm text-gray-500">Your projects, billing details, and reported activity in one place.</p>
+    </div>
+    <%= link_to "New project", new_customer_project_path(@overview.customer), class: "inline-flex shrink-0 items-center justify-center rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600" %>
+  </header>
 
-  <% if @overview.customer.projects.empty? %>
-    <p>No projects yet. Start creating your first project!</p>
-  <% else %>
-    <h2 class="text-3xl font-bold">Your Projects</h2>
-    <ul class="list-disc list-inside">
-      <% @overview.projects.each do |project| %>
-        <li><%= project.name %></li>
+  <section aria-label="Summary" class="grid gap-4 sm:grid-cols-3">
+    <div class="rounded-xl border border-gray-200 bg-gray-50 p-6">
+      <p class="text-sm font-medium text-gray-500">Total projects</p>
+      <p class="mt-3 text-3xl font-semibold tracking-tight"><%= @overview.projects.size %></p>
+    </div>
+    <div class="rounded-xl border border-gray-200 bg-gray-50 p-6">
+      <p class="text-sm font-medium text-gray-500">Active projects</p>
+      <p class="mt-3 text-3xl font-semibold tracking-tight"><%= @overview.projects.count(&:active?) %></p>
+    </div>
+    <div class="rounded-xl border border-gray-200 bg-gray-50 p-6">
+      <p class="text-sm font-medium text-gray-500">Reported events</p>
+      <p class="mt-3 text-3xl font-semibold tracking-tight"><%= @overview.projects.sum { |project| project.events.size } %></p>
+    </div>
+  </section>
+
+  <div class="grid items-start gap-8 lg:grid-cols-3">
+    <section aria-labelledby="projects-heading" class="space-y-5 lg:col-span-2">
+      <div>
+        <h2 id="projects-heading" class="text-xl font-semibold tracking-tight">Projects</h2>
+        <p class="mt-1 text-sm text-gray-500">Billing settings and recent activity for each project.</p>
+      </div>
+
+      <% if @overview.projects.empty? %>
+        <div class="rounded-xl border border-dashed border-gray-300 bg-gray-50 px-6 py-14 text-center">
+          <h3 class="text-lg font-semibold">Your first project starts here</h3>
+          <p class="mx-auto mt-2 max-w-sm text-sm leading-6 text-gray-500">Create a project to organize reported events and keep its billing details together.</p>
+          <%= link_to "Create a project", new_customer_project_path(@overview.customer), class: "mt-5 inline-block rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700" %>
+        </div>
+      <% else %>
+        <% @overview.projects.each do |project| %>
+          <article class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+            <div class="flex items-start justify-between gap-4 px-6 pt-6">
+              <h3 class="text-lg font-semibold"><%= project.name %></h3>
+              <span class="<%= project.active? ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-600' %> rounded-full px-3 py-1 text-xs font-medium">
+                <%= project.active? ? "Active" : "Inactive" %>
+              </span>
+            </div>
+            <dl class="grid grid-cols-2 gap-4 px-6 py-5">
+              <div>
+                <dt class="text-xs font-medium uppercase tracking-wide text-gray-500">Hourly rate</dt>
+                <dd class="mt-1 text-lg font-semibold tabular-nums"><%= project.hourly_rate.nil? ? "Not set" : number_with_precision(project.hourly_rate, precision: 2, delimiter: ",") %></dd>
+              </div>
+              <div>
+                <dt class="text-xs font-medium uppercase tracking-wide text-gray-500">Monthly budget</dt>
+                <dd class="mt-1 text-lg font-semibold tabular-nums"><%= project.monthly_budget.nil? ? "Not set" : number_with_precision(project.monthly_budget, precision: 2, delimiter: ",") %></dd>
+              </div>
+            </dl>
+            <div class="border-t border-gray-100 bg-gray-50 px-6 py-4">
+              <h4 class="text-sm font-medium text-gray-700">Recent events <span class="ml-1 text-gray-400">(<%= project.events.size %> total)</span></h4>
+              <% if project.events.empty? %>
+                <p class="mt-2 text-sm text-gray-500">No events reported yet.</p>
+              <% else %>
+                <ul class="mt-2 space-y-2 text-sm text-gray-600">
+                  <% project.events.sort_by(&:created_at).reverse.first(3).each do |event| %>
+                    <li class="flex flex-wrap justify-between gap-2">
+                      <span>Event #<%= event.id %></span>
+                      <span><%= event.start ? l(event.start, format: :long) : "Start not set" %> – <%= event.end ? l(event.end, format: :long) : "End not set" %></span>
+                    </li>
+                  <% end %>
+                </ul>
+              <% end %>
+            </div>
+          </article>
+        <% end %>
       <% end %>
-    </ul>
-  <% end %>
+    </section>
+
+    <aside class="rounded-xl border border-gray-200 bg-white p-6" aria-labelledby="customer-heading">
+      <h2 id="customer-heading" class="text-lg font-semibold">Customer details</h2>
+      <dl class="mt-5 space-y-5 text-sm">
+        <div>
+          <dt class="text-gray-500">Business ID</dt>
+          <dd class="mt-1 font-medium"><%= @overview.customer.business_id.presence || "Not provided" %></dd>
+        </div>
+        <div>
+          <dt class="text-gray-500">Customer status</dt>
+          <dd class="mt-1 font-medium"><%= @overview.customer.active? ? "Active" : "Inactive" %></dd>
+        </div>
+        <div>
+          <dt class="text-gray-500">Contract</dt>
+          <dd class="mt-1 font-medium"><%= @overview.customer.has_contract? ? "On file" : "No contract on file" %></dd>
+        </div>
+      </dl>
+    </aside>
+  </div>
 </div>

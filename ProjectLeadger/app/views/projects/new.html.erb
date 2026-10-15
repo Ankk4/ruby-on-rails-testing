@@ -1,0 +1,45 @@
+<% content_for :title, "New Project" %>
+
+<section class="mx-auto w-full max-w-2xl rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-10">
+  <header class="mb-8">
+    <p class="text-sm font-medium uppercase tracking-wide text-blue-600">Project Ledger</p>
+    <h1 class="mt-2 text-3xl font-bold tracking-tight text-gray-900">Create a project</h1>
+    <p class="mt-3 text-sm leading-6 text-gray-600">Create a project for <strong><%= @customer.name %></strong> and set its billing details.</p>
+  </header>
+
+  <%= form_with model: [@customer, @project], class: "space-y-6" do |f| %>
+    <% if @project.errors.any? %>
+      <div role="alert" class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+        <h2 class="font-semibold">Please check the following:</h2>
+        <ul class="mt-2 list-disc space-y-1 pl-5">
+          <% @project.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div>
+      <%= f.label :name, "Project name", class: "block text-sm font-medium text-gray-900" %>
+      <%= f.text_field :name, placeholder: "e.g. Website redesign", class: "mt-2 block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500" %>
+    </div>
+
+    <fieldset>
+      <legend class="text-sm font-semibold text-gray-900">Billing details</legend>
+      <div class="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div>
+          <%= f.label :hourly_rate, class: "block text-sm font-medium text-gray-900" %>
+          <%= f.number_field :hourly_rate, step: "0.01", placeholder: "0.00", class: "mt-2 block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500" %>
+        </div>
+        <div>
+          <%= f.label :monthly_budget, class: "block text-sm font-medium text-gray-900" %>
+          <%= f.number_field :monthly_budget, step: "0.01", placeholder: "0.00", class: "mt-2 block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500" %>
+        </div>
+      </div>
+    </fieldset>
+
+    <div class="border-t border-gray-200 pt-6">
+      <%= f.submit "Create project", class: "inline-flex w-full cursor-pointer justify-center rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:w-auto" %>
+    </div>
+  <% end %>
+</section>

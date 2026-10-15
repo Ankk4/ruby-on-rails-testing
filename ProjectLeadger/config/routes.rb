@@ -1,6 +1,11 @@
 Rails.application.routes.draw do
   resources :customers do
     get "overview", on: :member, to:"customers_overview#overview"
+    resources :projects, only: [:new, :create]
+  end
+
+  resources :projects do
+    get "overview", on: :member, to:"projects_overview#overview"
   end
 
 
